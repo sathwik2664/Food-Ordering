@@ -6,8 +6,9 @@ import {
   FlatList,
   Image,
   TouchableOpacity,
-  Icon,
+  TextInput,
 } from 'react-native';
+import * as Icon from 'react-native-feather';
 import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -16,12 +17,14 @@ const Canteen1 = () => {
   const [dishes, setDishes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [itemCounts, setItemCounts] = useState({});
+  const [searchQuery, setSearchQuery] = useState(''); // State for search query
+  const [addedItems, setAddedItems] = useState({}); // Track added items to change buttons
   const navigation = useNavigation();
 
   useEffect(() => {
     const fetchDishes = async () => {
       try {
-        const response = await axios.get('http://192.168.37.203:5000/food/items');
+        const response = await axios.get('http://192.168.0.101:5000/food/items');
         if (response.status === 200 && Array.isArray(response.data.data)) {
           const dishes = response.data.data;
           setDishes(dishes);
@@ -77,14 +80,35 @@ const Canteen1 = () => {
       newCounts[id] = (newCounts[id] || 0) + 1;
       return newCounts;
     });
+  
+    setAddedItems((prevAddedItems) => ({
+      ...prevAddedItems,
+      [id]: true, // Keep item as added
+    }));
   };
-
+  
   const decreaseCount = (id) => {
     setItemCounts((prevCounts) => {
       const newCounts = { ...prevCounts };
-      newCounts[id] = Math.max((newCounts[id] || 0) - 1, 0);
+      const updatedCount = Math.max((newCounts[id] || 0) - 1, 0);
+      newCounts[id] = updatedCount;
+  
+      // If count reaches zero, remove item from addedItems
+      if (updatedCount === 0) {
+        setAddedItems((prevAddedItems) => {
+          const updatedAddedItems = { ...prevAddedItems };
+          delete updatedAddedItems[id]; // Remove item from addedItems
+          return updatedAddedItems;
+        });
+      }
+  
       return newCounts;
     });
+  };
+  
+
+  const handleAddClick = (id) => {
+    increaseCount(id); // Increase count when Add is clicked
   };
 
   const viewCart = () => {
@@ -93,7 +117,7 @@ const Canteen1 = () => {
         acc[dish._id] = {
           id: dish._id,
           name: dish.name,
-          imageUrl: `http://192.168.37.203:5000${dish.imageUrl}`,
+          imageUrl: `http://192.168.0.101:5000${dish.imageUrl}`,
           price: dish.price,
           count: itemCounts[dish._id],
         };
@@ -106,6 +130,10 @@ const Canteen1 = () => {
 
   const totalItemsInCart = Object.values(itemCounts).reduce((acc, count) => acc + count, 0);
 
+  const filteredDishes = dishes.filter((dish) =>
+    dish.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   if (loading) {
     return <Text style={styles.loadingText}>Loading...</Text>;
   }
@@ -116,13 +144,24 @@ const Canteen1 = () => {
 
   return (
     <View style={styles.container}>
+      {/* Search Bar */}
+      <View style={styles.searchBar}>
+        <Icon.Search height="25" width="25" stroke="gray" />
+        <TextInput
+          placeholder="Search Dishes"
+          style={styles.searchInput}
+          value={searchQuery}
+          onChangeText={(text) => setSearchQuery(text)}
+        />
+      </View>
+
       <FlatList
-        data={dishes}
+        data={filteredDishes}
         renderItem={({ item }) => (
           <View style={styles.dishContainer}>
             {item.imageUrl ? (
               <Image
-                source={{ uri: `http://192.168.37.203:5000${item.imageUrl}` }}
+                source={{ uri: `http://192.168.0.101:5000${item.imageUrl}` }}
                 style={styles.dishImage}
               />
             ) : (
@@ -134,19 +173,31 @@ const Canteen1 = () => {
               <Text style={styles.dishName}>{item.name}</Text>
               <Text style={styles.dishPrice}>₹{item.price}</Text>
               <View style={styles.buttonWrapper}>
-                <TouchableOpacity
-                  onPress={() => decreaseCount(item._id)}
-                  style={styles.button}
-                >
-                  <Text style={styles.buttonText}>-</Text>
-                </TouchableOpacity>
-                <Text style={styles.countText}>{itemCounts[item._id]}</Text>
-                <TouchableOpacity
-                  onPress={() => increaseCount(item._id)}
-                  style={styles.button}
-                >
-                  <Text style={styles.buttonText}>+</Text>
-                </TouchableOpacity>
+                {/* Add button or count buttons */}
+                {itemCounts[item._id] > 0 ? (
+                  <>
+                    <TouchableOpacity
+                      onPress={() => decreaseCount(item._id)}
+                      style={styles.button}
+                    >
+                      <Text style={styles.buttonText}>-</Text>
+                    </TouchableOpacity>
+                    <Text style={styles.countText}>{itemCounts[item._id]}</Text>
+                    <TouchableOpacity
+                      onPress={() => increaseCount(item._id)}
+                      style={styles.button}
+                    >
+                      <Text style={styles.buttonText}>+</Text>
+                    </TouchableOpacity>
+                  </>
+                ) : (
+                  <TouchableOpacity
+                    onPress={() => handleAddClick(item._id)}
+                    style={styles.button}
+                  >
+                    <Text style={styles.buttonText}>Add</Text>
+                  </TouchableOpacity>
+                )}
               </View>
             </View>
           </View>
@@ -160,7 +211,7 @@ const Canteen1 = () => {
           <View style={styles.cartButtonContent}>
             <View style={styles.cartItemSummary}>
               <Text style={styles.cartItemText}>
-                 item{totalItemsInCart > 1 ? 's' : ''} added :{totalItemsInCart}
+                item{totalItemsInCart > 1 ? 's' : ''} added: {totalItemsInCart}
               </Text>
             </View>
             <Text style={styles.cartButtonText}>View Cart</Text>
@@ -248,12 +299,14 @@ const styles = StyleSheet.create({
   },
   cartButton: {
     backgroundColor: '#4CAF50',
+    height: 70,
     padding: 15,
     borderRadius: 8,
     position: 'absolute',
-    bottom: 20,
-    left: 20,
-    right: 20,
+    bottom: 5,
+    left: 10,
+    right: 10,
+    justifyContent: 'center',
     alignItems: 'center',
   },
   cartButtonContent: {
@@ -263,7 +316,7 @@ const styles = StyleSheet.create({
   },
   cartItemSummary: {
     flexDirection: 'row',
-    alignItems: '',
+    alignItems: 'center',
   },
   cartItemText: {
     color: '#fff',
@@ -274,6 +327,35 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginLeft: 10,
+  },
+
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderWidth: 1,
+    borderRadius: 25,
+    borderColor: '#E0E0E0',
+    margin: 16,
+  },
+  searchInput: {
+    flex: 1,
+    marginLeft: 8,
+    fontSize: 16,
+    color: 'black',
+  },
+  locationContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: 8,
+    borderLeftWidth: 1,
+    borderLeftColor: '#E0E0E0',
+    paddingLeft: 8,
+  },
+  locationText: {
+    color: 'gray',
+    fontSize: 14,
   },
 });
 

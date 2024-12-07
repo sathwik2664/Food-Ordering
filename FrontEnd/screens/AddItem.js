@@ -51,7 +51,7 @@ export default function AddItem() {
         setLoading(true);
 
         try {
-            const response = await axios.post('http://192.168.37.203:5000/admin/add-food', formData, {
+            const response = await axios.post('http://192.168.0.101:5000/admin/add-food', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },

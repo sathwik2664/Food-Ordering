@@ -12,7 +12,7 @@ export default function AdminDashboard({ navigation }) {
     const fetchItems = async () => {
         setLoading(true);
         try {
-            const response = await axios.get('http://192.168.37.203:5000/admin/items'); // Replace with your server URL
+            const response = await axios.get('http://192.168.0.101:5000/admin/items'); // Replace with your server URL
             setItems(response.data.items); // Assuming API returns { items: [...] }
         } catch (error) {
             console.error('Error fetching items:', error);
@@ -41,7 +41,7 @@ export default function AdminDashboard({ navigation }) {
                     style: 'destructive',
                     onPress: async () => {
                         try {
-                            await axios.delete(`http://192.168.37.203:5000/admin/delete-food/${id}`);
+                            await axios.delete(`http://192.168.0.101:5000/admin/delete-food/${id}`);
                             Alert.alert('Success', 'Item deleted successfully');
                             fetchItems(); // Refresh the list
                         } catch (error) {
@@ -67,7 +67,7 @@ export default function AdminDashboard({ navigation }) {
     const renderItem = ({ item }) => (
         <View style={styles.itemCard}>
             {item.imageUrl ? (
-                <Image source={{ uri: `http://192.168.37.203:5000${item.imageUrl}` }} style={styles.itemImage} />
+                <Image source={{ uri: `http://192.168.0.101:5000${item.imageUrl}` }} style={styles.itemImage} />
             ) : (
                 <View style={styles.placeholderImage}>
                     <Text style={styles.placeholderText}>No Image</Text>
@@ -89,7 +89,9 @@ export default function AdminDashboard({ navigation }) {
     );
 
     return (
+        
         <View style={styles.container}>
+            <View><Text style={{fontSize:22,marginLeft:12,padding:10}}>All Items</Text></View>
             {loading ? (
                 <ActivityIndicator size="large" color="#6200ee" />
             ) : (

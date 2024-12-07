@@ -119,14 +119,7 @@ const HomeScreen = ({ navigation }) => {
       </ScrollView>
 
      
-      {/* <TouchableOpacity style={styles.cartButton} onPress={() => navigation.navigate('Cart', { cart })}>
-        <Icon.ShoppingCart height="30" width="30" stroke="white" />
-        {cartItemCount > 0 && (
-          <View style={styles.cartItemCount}>
-            <Text style={styles.cartItemCountText}>{cartItemCount}</Text>
-          </View>
-        )}
-      </TouchableOpacity> */}
+      
     </SafeAreaView>
   );
 };

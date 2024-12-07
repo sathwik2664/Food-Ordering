@@ -118,7 +118,7 @@ const UserTabNavigator = () => {
 };
 
 export default function App() {
-  const [isAdmin, setIsAdmin] = useState(true); // Set to true for admin view
+  const [isAdmin, setIsAdmin] = useState(false); // Set to true for admin view
 
   return (
     <NavigationContainer>
