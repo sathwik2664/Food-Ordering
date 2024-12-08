@@ -12,7 +12,7 @@ export default function AdminDashboard({ navigation }) {
     const fetchItems = async () => {
         setLoading(true);
         try {
-            const response = await axios.get('http://192.168.0.101:5000/admin/items'); // Replace with your server URL
+            const response = await axios.get('http://172.20.10.2:5000/admin/items'); // Replace with your server URL
             setItems(response.data.items); // Assuming API returns { items: [...] }
         } catch (error) {
             console.error('Error fetching items:', error);

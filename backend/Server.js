@@ -6,7 +6,7 @@ const multer = require('multer');
 const path = require('path');
 const adminRoutes = require("./routes/adminRoutes");
 const foodRoutes = require("./routes/foodRoutes");
-//const otpRoutes = require("./routes/otpRoutes");
+const otpRoutes = require("./routes/otpRoutes");
 
 const app = express();
 
@@ -35,7 +35,7 @@ mongoose.connect(process.env.MONGO_URI, {
 
 app.use("/admin",adminRoutes);
 app.use("/food",foodRoutes);
-//app.use("/otp",otpRoutes);
+app.use("/otp",otpRoutes);
 
 // Serve uploaded images
 app.use('/uploads', express.static('uploads'));
