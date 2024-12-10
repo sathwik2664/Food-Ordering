@@ -12,8 +12,8 @@ const app = express();
 
 // Middleware to handle CORS and JSON requests
 app.use(cors({
-    origin: '*', // Allows all domains, adjust if needed
-  }));
+    origin: '*', // Adjust this to specific domains in production for better security
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -23,26 +23,31 @@ const storage = multer.diskStorage({
         cb(null, 'uploads/');
     },
     filename: (req, file, cb) => {
-        cb(null, Date.now() + path.extname(file.originalname)); // Add extension
+        cb(null, `${Date.now()}${path.extname(file.originalname)}`); // Add file extension
     },
 });
+const upload = multer({ storage }); // Initialize multer storage
 
-// Connect to MongoDB
-mongoose.connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-}).then(() => console.log('MongoDB connected')).catch(err => console.log(err));
+// MongoDB Connection
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log('MongoDB connected successfully'))
+  .catch(err => console.error('MongoDB connection error:', err));
 
-app.use("/admin",adminRoutes);
-app.use("/food",foodRoutes);
-app.use("/otp",otpRoutes);
+// API Routes
+app.use("/admin", adminRoutes);
+app.use("/food", foodRoutes);
+app.use("/otp", otpRoutes);
 
-// Serve uploaded images
+// Serve uploaded files statically
 app.use('/uploads', express.static('uploads'));
-app.use('/uploads', express.static('uploads'));
+
+// Default Route
+app.get('/', (req, res) => {
+    res.send('Welcome to the API!');
+});
 
 // Start the server
-const port = process.env.PORT || 5000;
-app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
 });

@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { StatusBar } from 'expo-status-bar';
+import { StatusBar, ActivityIndicator, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Icon from 'react-native-feather';
 
+// Screen Imports
 import HomeScreen from './screens/HomeScreen';
 import OrdersScreen from './screens/OrdersScreen';
 import ProfileScreen from './screens/ProfileScreen';
@@ -19,6 +20,7 @@ import Cart from './screens/Cart';
 import EditItem from './screens/EditItem';
 import LoginScreen from './screens/LoginScreen';
 
+// Navigators
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
@@ -28,6 +30,7 @@ const AdminStack = () => (
     <Stack.Screen name="AdminDashboard" component={AdminDashboard} />
     <Stack.Screen name="AddItem" component={AddItem} />
     <Stack.Screen name="EditItem" component={EditItem} />
+    <Stack.Screen name="LoginScreen" component={LoginScreen} />
   </Stack.Navigator>
 );
 
@@ -41,6 +44,7 @@ const CanteenStack = () => (
     <Stack.Screen name="Canteen4" component={Canteen4} />
     <Stack.Screen name="Cart" component={Cart} />
     <Stack.Screen name="EditItem" component={EditItem} />
+    <Stack.Screen name="LoginScreen" component={LoginScreen} />
   </Stack.Navigator>
 );
 
@@ -84,6 +88,7 @@ const UserTabNavigator = () => (
     screenOptions={{
       tabBarStyle: { backgroundColor: '#fff', height: 60 },
       tabBarLabelStyle: { fontSize: 14, paddingBottom: 4 },
+      headerShown: false,
     }}
   >
     <Tab.Screen
@@ -110,24 +115,38 @@ const UserTabNavigator = () => (
   </Tab.Navigator>
 );
 
+// Main App Component
 export default function App() {
-  const [isAdmin, setIsAdmin] = useState(null); // Check user role from AsyncStorage
+  const [isAdmin, setIsAdmin] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const checkRole = async () => {
-      const role = await AsyncStorage.getItem('role');
-      setIsAdmin(role);
+    const fetchRole = async () => {
+      try {
+        const role = await AsyncStorage.getItem('role');
+        console.log(role);
+        if (role === 'admin') {
+          setIsAdmin('admin');
+        } else if (role === 'user') {
+          setIsAdmin('user');
+        } else {
+          setIsAdmin(null); // User is not logged in
+        }
+      } catch (error) {
+        console.error('Error fetching user role:', error);
+        setIsAdmin(null);
+      } finally {
+        setIsLoading(false);
+      }
     };
-    checkRole();
+    fetchRole();
   }, []);
 
-  if (isAdmin === null) {
+  if (isLoading) {
     return (
-      <NavigationContainer>
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="Login" component={LoginScreen} />
-        </Stack.Navigator>
-      </NavigationContainer>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
     );
   }
 
@@ -136,8 +155,14 @@ export default function App() {
       <StatusBar barStyle="dark-content" />
       {isAdmin === 'admin' ? (
         <AdminTabNavigator />
-      ) : (
+      ) : isAdmin === 'user' ? (
         <UserTabNavigator />
+      ) : (
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="Login" component={LoginScreen} />
+          <Stack.Screen name="Home" component={HomeScreen} />
+          <Stack.Screen name="AdminDashboard" component={AdminDashboard} />
+        </Stack.Navigator>
       )}
     </NavigationContainer>
   );

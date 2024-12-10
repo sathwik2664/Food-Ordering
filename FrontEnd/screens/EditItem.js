@@ -10,7 +10,7 @@ export default function EditItem({ route, navigation }) {
 
     const updateItem = async () => {
         try {
-            const response = await axios.put(`http://192.168.0.101:5000/admin/update-food/${item._id}`, {
+            const response = await axios.put(`http://192.168.37.203:5000/admin/update-food/${item._id}`, {
                 name,
                 price: parseFloat(price),
             });

@@ -24,7 +24,8 @@ const Canteen1 = () => {
   useEffect(() => {
     const fetchDishes = async () => {
       try {
-        const response = await axios.get('http://192.168.0.101:5000/food/items');
+        const response = await axios.get('http://192.168.37.203:5000/food/items');
+        // console.log(response.data);
         if (response.status === 200 && Array.isArray(response.data.data)) {
           const dishes = response.data.data;
           setDishes(dishes);
@@ -51,6 +52,7 @@ const Canteen1 = () => {
         }
       } catch (error) {
         console.error('Error fetching dishes:', error);
+        console.log(error);
         alert('Error fetching dishes. Please try again later.');
       } finally {
         setLoading(false);
@@ -117,7 +119,7 @@ const Canteen1 = () => {
         acc[dish._id] = {
           id: dish._id,
           name: dish.name,
-          imageUrl: `http://192.168.0.101:5000${dish.imageUrl}`,
+          imageUrl: `http://192.168.37.203:5000${dish.imageUrl}`,
           price: dish.price,
           count: itemCounts[dish._id],
         };
@@ -161,7 +163,7 @@ const Canteen1 = () => {
           <View style={styles.dishContainer}>
             {item.imageUrl ? (
               <Image
-                source={{ uri: `http://192.168.0.101:5000${item.imageUrl}` }}
+                source={{ uri: `http://192.168.37.203:5000${item.imageUrl}` }}
                 style={styles.dishImage}
               />
             ) : (

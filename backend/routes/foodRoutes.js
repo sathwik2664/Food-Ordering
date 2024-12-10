@@ -7,7 +7,7 @@ const router = express.Router();
 router.get('/items', async (req, res) => {
   try {
     // Fetch all food items from the database
-    const foodItems = await FoodItem.find();
+    const foodItems = await FoodItem.find({});
 
     res.status(200).json({ data: foodItems, message: 'Food items retrieved successfully' });
   } catch (err) {
