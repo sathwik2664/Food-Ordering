@@ -16,7 +16,7 @@ const LoginScreen = ({ navigation }) => {
     }
 
     try {
-      await axios.post("http://192.168.37.203:5000/otp/generate", { mobileNumber });
+      await axios.post("http://192.168.45.203:5000/otp/generate", { mobileNumber });
       Alert.alert("OTP Sent", "Check your mobile for the OTP.");
       setIsOtpSent(true);
       disableResendButton(); // Disable "Resend OTP" for a short time
@@ -38,7 +38,7 @@ const LoginScreen = ({ navigation }) => {
     }
 
     try {
-      const response = await axios.post('http://192.168.37.203:5000/otp/validate', {
+      const response = await axios.post('http://192.168.45.203:5000/otp/validate', {
         mobileNumber,
         otp,
       });

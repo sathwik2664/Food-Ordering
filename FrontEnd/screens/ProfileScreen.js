@@ -1,24 +1,28 @@
 import React from 'react';
-import { View, Text, Button, StyleSheet, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ProfileScreen = ({ navigation }) => {
   const handleLogout = async () => {
     try {
-      // Clear the stored user role or any authentication data
-      await AsyncStorage.removeItem('role');
-      // Navigate back to the Login screen
-      navigation.navigate('LoginScreen');
+      await AsyncStorage.removeItem('role'); // Clear stored role
+      Alert.alert('Logout Successful', 'You have been logged out.');
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Login' }], // Matches the name in CommonStack
+      });
     } catch (error) {
-      console.error('Error logging out:', error);
-      Alert.alert('Error', 'Failed to log out. Please try again.');
+      console.error('Error during logout:', error);
+      Alert.alert('Error', 'Failed to logout. Please try again.');
     }
   };
 
   return (
     <View style={styles.screen}>
       <Text style={styles.text}>Profile Screen</Text>
-      <Button title="Logout" onPress={handleLogout} color="#f44336" />
+      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+        <Text style={styles.logoutText}>Logout</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -33,6 +37,16 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 24,
     marginBottom: 20,
+  },
+  logoutButton: {
+    padding: 12,
+    backgroundColor: '#f44336',
+    borderRadius: 8,
+  },
+  logoutText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
 });
 

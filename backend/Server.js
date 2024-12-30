@@ -7,7 +7,8 @@ const path = require('path');
 const adminRoutes = require("./routes/adminRoutes");
 const foodRoutes = require("./routes/foodRoutes");
 const otpRoutes = require("./routes/otpRoutes");
-
+const userRoutes = require('./routes/userRoutes');  
+const orderRoutes = require('./routes/OrderRoutes'); 
 const app = express();
 
 // Middleware to handle CORS and JSON requests
@@ -37,6 +38,8 @@ mongoose.connect(process.env.MONGO_URI)
 app.use("/admin", adminRoutes);
 app.use("/food", foodRoutes);
 app.use("/otp", otpRoutes);
+app.use("/user", userRoutes);
+app.use('/order', orderRoutes);
 
 // Serve uploaded files statically
 app.use('/uploads', express.static('uploads'));

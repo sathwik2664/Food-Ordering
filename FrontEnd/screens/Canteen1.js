@@ -17,15 +17,13 @@ const Canteen1 = () => {
   const [dishes, setDishes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [itemCounts, setItemCounts] = useState({});
-  const [searchQuery, setSearchQuery] = useState(''); // State for search query
-  const [addedItems, setAddedItems] = useState({}); // Track added items to change buttons
+  const [searchQuery, setSearchQuery] = useState('');
   const navigation = useNavigation();
 
   useEffect(() => {
     const fetchDishes = async () => {
       try {
-        const response = await axios.get('http://192.168.37.203:5000/food/items');
-        // console.log(response.data);
+        const response = await axios.get('http://192.168.165.203:5000/food/1/items');
         if (response.status === 200 && Array.isArray(response.data.data)) {
           const dishes = response.data.data;
           setDishes(dishes);
@@ -39,7 +37,13 @@ const Canteen1 = () => {
             const savedCart = await AsyncStorage.getItem('cart');
             if (savedCart) {
               const cartData = JSON.parse(savedCart);
-              setItemCounts({ ...initialCounts, ...cartData });
+              const filteredCart = Object.keys(cartData)
+                .filter((id) => dishes.some((dish) => dish._id === id))
+                .reduce((acc, id) => {
+                  acc[id] = cartData[id];
+                  return acc;
+                }, {});
+              setItemCounts({ ...initialCounts, ...filteredCart });
             } else {
               setItemCounts(initialCounts);
             }
@@ -52,7 +56,6 @@ const Canteen1 = () => {
         }
       } catch (error) {
         console.error('Error fetching dishes:', error);
-        console.log(error);
         alert('Error fetching dishes. Please try again later.');
       } finally {
         setLoading(false);
@@ -82,35 +85,14 @@ const Canteen1 = () => {
       newCounts[id] = (newCounts[id] || 0) + 1;
       return newCounts;
     });
-  
-    setAddedItems((prevAddedItems) => ({
-      ...prevAddedItems,
-      [id]: true, // Keep item as added
-    }));
   };
-  
+
   const decreaseCount = (id) => {
     setItemCounts((prevCounts) => {
       const newCounts = { ...prevCounts };
-      const updatedCount = Math.max((newCounts[id] || 0) - 1, 0);
-      newCounts[id] = updatedCount;
-  
-      // If count reaches zero, remove item from addedItems
-      if (updatedCount === 0) {
-        setAddedItems((prevAddedItems) => {
-          const updatedAddedItems = { ...prevAddedItems };
-          delete updatedAddedItems[id]; // Remove item from addedItems
-          return updatedAddedItems;
-        });
-      }
-  
+      newCounts[id] = Math.max((newCounts[id] || 0) - 1, 0);
       return newCounts;
     });
-  };
-  
-
-  const handleAddClick = (id) => {
-    increaseCount(id); // Increase count when Add is clicked
   };
 
   const viewCart = () => {
@@ -119,7 +101,7 @@ const Canteen1 = () => {
         acc[dish._id] = {
           id: dish._id,
           name: dish.name,
-          imageUrl: `http://192.168.37.203:5000${dish.imageUrl}`,
+          imageUrl: `http://192.168.165.203:5000${dish.imageUrl}`,
           price: dish.price,
           count: itemCounts[dish._id],
         };
@@ -163,7 +145,7 @@ const Canteen1 = () => {
           <View style={styles.dishContainer}>
             {item.imageUrl ? (
               <Image
-                source={{ uri: `http://192.168.37.203:5000${item.imageUrl}` }}
+                source={{ uri: `http://192.168.165.203:5000${item.imageUrl}` }}
                 style={styles.dishImage}
               />
             ) : (
@@ -175,7 +157,6 @@ const Canteen1 = () => {
               <Text style={styles.dishName}>{item.name}</Text>
               <Text style={styles.dishPrice}>₹{item.price}</Text>
               <View style={styles.buttonWrapper}>
-                {/* Add button or count buttons */}
                 {itemCounts[item._id] > 0 ? (
                   <>
                     <TouchableOpacity
@@ -194,7 +175,7 @@ const Canteen1 = () => {
                   </>
                 ) : (
                   <TouchableOpacity
-                    onPress={() => handleAddClick(item._id)}
+                    onPress={() => increaseCount(item._id)}
                     style={styles.button}
                   >
                     <Text style={styles.buttonText}>Add</Text>
@@ -211,11 +192,9 @@ const Canteen1 = () => {
       {totalItemsInCart > 0 && (
         <TouchableOpacity style={styles.cartButton} onPress={viewCart}>
           <View style={styles.cartButtonContent}>
-            <View style={styles.cartItemSummary}>
-              <Text style={styles.cartItemText}>
-                item{totalItemsInCart > 1 ? 's' : ''} added: {totalItemsInCart}
-              </Text>
-            </View>
+            <Text style={styles.cartItemText}>
+              item{totalItemsInCart > 1 ? 's' : ''} added: {totalItemsInCart}
+            </Text>
             <Text style={styles.cartButtonText}>View Cart</Text>
           </View>
         </TouchableOpacity>
@@ -316,10 +295,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  cartItemSummary: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
   cartItemText: {
     color: '#fff',
     fontSize: 18,
@@ -328,9 +303,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
-    marginLeft: 10,
   },
-
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -346,18 +319,6 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     fontSize: 16,
     color: 'black',
-  },
-  locationContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginLeft: 8,
-    borderLeftWidth: 1,
-    borderLeftColor: '#E0E0E0',
-    paddingLeft: 8,
-  },
-  locationText: {
-    color: 'gray',
-    fontSize: 14,
   },
 });
 

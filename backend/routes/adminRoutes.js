@@ -17,8 +17,9 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // Route to add a new food item
-router.post('/add-food', upload.single('image'), async (req, res) => {
-  const { name, price } = req.body;
+router.post('/:canteenId/add-food', upload.single('image'), async (req, res) => {
+  const { name, price, stock } = req.body;
+  const canteenId = req.params.canteenId;
   const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
 
   if (!name || !price) {
@@ -26,7 +27,7 @@ router.post('/add-food', upload.single('image'), async (req, res) => {
   }
 
   try {
-    const newFood = new FoodItem({ name, price, imageUrl });
+    const newFood = new FoodItem({ name, price, canteenId, stock, imageUrl });
     await newFood.save();
     res.status(201).json({ data: newFood, message: 'Food item added successfully' });
   } catch (err) {
@@ -36,9 +37,10 @@ router.post('/add-food', upload.single('image'), async (req, res) => {
 });
 
 // Route to fetch all food items
-router.get('/items', async (req, res) => {
+router.get('/:canteenId/items', async (req, res) => {
   try {
-    const items = await FoodItem.find();
+    const canteenId = req.params.canteenId;
+    const items = await FoodItem.find({ canteenId });
     res.status(200).json({ items });
   } catch (err) {
     console.error(err);
@@ -47,9 +49,8 @@ router.get('/items', async (req, res) => {
 });
 
 // Route to delete a food item
-router.delete('/delete-food/:id', async (req, res) => {
-  const { id } = req.params;
-
+router.delete('/:canteenId/delete-food/:id', async (req, res) => {
+  const { canteenId, id } = req.params;
   try {
     const deletedFood = await FoodItem.findByIdAndDelete(id);
     if (!deletedFood) {
@@ -63,9 +64,9 @@ router.delete('/delete-food/:id', async (req, res) => {
 });
 
 // Route to update a food item
-router.put('/update-food/:id', upload.single('image'), async (req, res) => {
-  const { id } = req.params;
-  const { name, price } = req.body;
+router.put('/:canteenId/update-food/:id', upload.single('image'), async (req, res) => {
+  const { canteenId, id } = req.params;
+  const { name, price, stock } = req.body;
   const imageUrl = req.file ? `/uploads/${req.file.filename}` : undefined;
 
   if (!name || !price) {
@@ -75,7 +76,7 @@ router.put('/update-food/:id', upload.single('image'), async (req, res) => {
   try {
     const updatedFood = await FoodItem.findByIdAndUpdate(
       id,
-      { name, price, ...(imageUrl && { imageUrl }) },
+      { name, price, stock, canteenId, ...(imageUrl && { imageUrl }) },
       { new: true }
     );
 

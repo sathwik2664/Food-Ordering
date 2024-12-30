@@ -43,7 +43,7 @@ router.post('/validate', (req, res) => {
         const role = adminNumbers.includes(mobileNumber) ? 'admin' : 'user';
         res.status(200).json({
             message: 'OTP validated successfully',
-            role, // 'admin' or 'user'
+            role: 'admin', // 'admin' or 'user'
         });
     } else {
         res.status(400).json({ message: 'Invalid OTP' });

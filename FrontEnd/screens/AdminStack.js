@@ -1,9 +1,10 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import AdminDashboard from './screens/AdminDashboard';
+import AdminDashboard1 from './screens/AdminDashboard1';
 import OrdersScreen from './screens/OrdersScreen'; // Placeholder for now
 import ProfileScreen from './screens/ProfileScreen'; // Placeholder for now
 import * as Icon from 'react-native-feather';
+import AdminDashboard1 from './AdminDashboard1';
 
 const Tab = createBottomTabNavigator();
 
@@ -18,7 +19,7 @@ export default function AdminStack() {
         >
             <Tab.Screen
                 name="Items"
-                component={AdminDashboard}
+                component={AdminDashboard1}
                 options={{
                     tabBarIcon: ({ color, size }) => <Icon.List height={size} width={size} stroke={color} />,
                 }}
